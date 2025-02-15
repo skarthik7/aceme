@@ -59,7 +59,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
   Widget _title() {
     return const Text('Ace Me');
   }
@@ -70,6 +69,17 @@ class _LoginPageState extends State<LoginPage> {
       obscureText: isPassword ? !_isPasswordVisible : false,
       decoration: InputDecoration(
         labelText: title,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15.0),
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15.0),
+          borderSide: BorderSide(color: Colors.blue),
+        ),
         suffixIcon: isPassword 
             ? IconButton(
                 icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
@@ -109,35 +119,64 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _socialButton(IconData icon, Color color, VoidCallback onPressed) {
+    return IconButton(
+      icon: Icon(icon, color: color, size: 40),
+      onPressed: onPressed,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: _title(),
       ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        padding: const EdgeInsets.all(21),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ClipOval(
-              child: Image.asset(
-                'assets/images/logo.png',
-                height: 150,
-                width: 150, // image is a square for perfect circle
-                fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          padding: const EdgeInsets.all(21),
+          child: Column(
+            // crossAxisAlignment: CrossAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              ClipOval(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 140,
+                  width: 140, // image is a square for perfect circle
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            SizedBox(height: 100), // Space between image and fields
-            _entryField('Email', _controllerEmail),
-            _entryField('Password', _controllerPassword, isPassword: true), 
-            _errorMessage(),
-            _submitButton(),
-            _loginOrRegisterButton(),
-          ],
+              SizedBox(height: 50), // Space between image and fields
+              _entryField('Email', _controllerEmail),
+              SizedBox(height: 10), // Space between fields
+              _entryField('Password', _controllerPassword, isPassword: true), 
+              SizedBox(height: 10), // Space between fields and error message
+              _errorMessage(),
+              SizedBox(height: 10), // Space between error message and button
+              _submitButton(),
+              _loginOrRegisterButton(),
+              SizedBox(height: 10), // Space between buttons
+              Text('Or continue with'),
+              SizedBox(height: 10), // Space between text and social buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  
+                  SizedBox(width: 10), // Space between social buttons
+                  _socialButton(Icons.apple, Colors.black, () {
+                    // Handle Apple sign-in
+                  }),
+                  SizedBox(width: 10), // Space between social buttons
+                  _socialButton(Icons.facebook, Colors.blue, () {
+                    // Handle Facebook sign-in
+                  }),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
