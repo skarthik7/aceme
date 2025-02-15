@@ -12,8 +12,24 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String? errorMsg = "";
   bool isLogin = true;
+  bool _isPasswordVisible = false; 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+
+  String _getCustomErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'invalid-credential':
+        return 'Invalid email address or password. Please re-enter your login info.';
+      case 'email-already-in-use':
+        return 'This email is already registered. Try logging in.';
+      case 'weak-password':
+        return 'Password should be at least 6 characters long.';
+      case 'too-many-requests':
+        return 'Too many failed attempts. Try again later.';
+      default:
+        return 'An unknown error occurred. Please try again.';
+    }
+  }
 
   Future<void> signInWithEmailAndPassword() async {
     try {
@@ -22,8 +38,9 @@ class _LoginPageState extends State<LoginPage> {
         password: _controllerPassword.text,
       );
     } on FirebaseAuthException catch (e) {
+      print("Firebase Error Code: ${e.code}");
       setState(() {
-        errorMsg = e.message;
+        errorMsg = _getCustomErrorMessage(e.code); // 🔹 Map error codes
       });
     }
   }
@@ -35,30 +52,43 @@ class _LoginPageState extends State<LoginPage> {
         password: _controllerPassword.text,
       );
     } on FirebaseAuthException catch (e) {
+      print("Firebase Error Code: ${e.code}");
       setState(() {
-        errorMsg = e.message;
+        errorMsg = _getCustomErrorMessage(e.code); // 🔹 Map error codes
       });
     }
   }
 
+
   Widget _title() {
-    return Text('Ace Me');
+    return const Text('Ace Me');
   }
-  
-  Widget _entryField(
-    String title,
-    TextEditingController controller,
-  ){
+
+  Widget _entryField(String title, TextEditingController controller, {bool isPassword = false}) {
     return TextField(
       controller: controller,
+      obscureText: isPassword ? !_isPasswordVisible : false,
       decoration: InputDecoration(
         labelText: title,
+        suffixIcon: isPassword 
+            ? IconButton(
+                icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
 
   Widget _errorMessage() {
-    return Text(errorMsg == ''? '': '$errorMsg');
+    return Text(
+      errorMsg == '' ? '' : errorMsg!,
+      style: TextStyle(color: Colors.red), 
+    );
   }
 
   Widget _submitButton() {
@@ -78,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
       child: Text(isLogin ? 'Need an account? Register' : 'Already have an account? Login'),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,8 +123,17 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ClipOval(
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 150,
+                width: 150, // image is a square for perfect circle
+                fit: BoxFit.cover,
+              ),
+            ),
+            SizedBox(height: 100), // Space between image and fields
             _entryField('Email', _controllerEmail),
-            _entryField('Password', _controllerPassword),
+            _entryField('Password', _controllerPassword, isPassword: true), 
             _errorMessage(),
             _submitButton(),
             _loginOrRegisterButton(),
@@ -101,5 +141,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-}
+  }
 }

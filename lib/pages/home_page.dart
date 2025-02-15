@@ -34,7 +34,6 @@ class HomePage extends StatelessWidget {
     "Stay hungry for knowledge.",  
     "Believe in yourself and all that you are.",  
     "Hard work beats talent when talent doesn’t work hard.",
-    // Add more quotes here up to 100-150
   ];
 
   String getRandomQuote() {
