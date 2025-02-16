@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aceme/auth.dart';
-import 'package:aceme/pages/login_register_page.dart'; // Import the login_register_page
-import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
+import 'package:aceme/pages/login_register_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Account extends StatelessWidget {
   final String? email;
@@ -10,13 +10,14 @@ class Account extends StatelessWidget {
 
   String _getUsername(String? email) {
     if (email == null) return 'User';
-    return email.split('@')[0];
+    String name = email.split('@')[0];
+    return name[0].toUpperCase() + name.substring(1);
   }
 
   Future<void> signOut(BuildContext context) async {
     await Auth().signOut();
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPage()), // Navigate to login_register_page after sign out
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 
@@ -27,7 +28,7 @@ class Account extends StatelessWidget {
 
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // User must tap button to dismiss
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Change Password'),
@@ -55,9 +56,7 @@ class Account extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: Text('Change'),
@@ -66,22 +65,19 @@ class Account extends StatelessWidget {
                   User? user = FirebaseAuth.instance.currentUser;
                   String email = user?.email ?? '';
 
-                  // Reauthenticate the user
                   AuthCredential credential = EmailAuthProvider.credential(
                     email: email,
                     password: currentPasswordController.text,
                   );
                   await user?.reauthenticateWithCredential(credential);
-
-                  // Update the password
                   await user?.updatePassword(newPasswordController.text);
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Password changed successfully')),
                   );
                   Navigator.of(context).pop();
                 } on FirebaseAuthException catch (e) {
                   errorMessage = e.message;
-                  // Update the state to show the error message
                   (context as Element).markNeedsBuild();
                 }
               },
@@ -94,32 +90,41 @@ class Account extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String username = _getUsername(email);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_getUsername(email)), // Show username instead of "Account"
+        title: Text("Account"),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          //mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.blue,
+              child: Text(
+                username[0], // Display first letter of username
+                style: TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(username, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(email ?? 'No email', style: TextStyle(color: Colors.grey)),
             SizedBox(height: 20),
+            Divider(),
             ListTile(
-              leading: Icon(Icons.email),
-              title: Text(email ?? 'No email'),
-            ),
-            ListTile(
-              leading: Icon(Icons.lock),
+              leading: Icon(Icons.lock, color: Colors.blue),
               title: Text('Change Password'),
-              onTap: () {
-                _changePassword(context); // Show change password dialog
-              },
+              onTap: () => _changePassword(context),
             ),
+            Divider(),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
-              onTap: () {
-                signOut(context);
-              },
+              leading: Icon(Icons.logout, color: Colors.red),
+              title: Text('Sign out', style: TextStyle(color: Colors.red)),
+              onTap: () => signOut(context),
             ),
           ],
         ),
