@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:aceme/pages/planner.dart'; // Import the PlannerPage
+import 'package:provider/provider.dart';
+import 'package:aceme/theme_provider.dart';
 
 class NeedHelpPage extends StatefulWidget {
   @override
@@ -79,10 +80,12 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
                     actions: [
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (context) => PlannerPage()),
-                            (Route<dynamic> route) => false,
-                          );
+                          Navigator.of(context).pop(); // Close the dialog
+                          setState(() {
+                            _currentPage = 0;
+                            _sliderValue = 0;
+                          });
+                          _pageController.jumpToPage(0);
                         },
                         child: Text("OK"),
                       ),
@@ -100,84 +103,91 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: Text('Need Help?'),
-      ),
-      body: PageView.builder(
-        controller: _pageController,
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: questions.length + 1, // Add one for the introductory page
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            // Introductory page
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "We will ask you a few questions to assist you better.",
-                    style: TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 20),
-                  FloatingActionButton(
-                    backgroundColor: Colors.blue,
-                    onPressed: _nextPage,
-                    child: Icon(Icons.arrow_forward),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            // Question pages
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    questions[index - 1], // Adjust index for questions
-                    style: TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 20),
-                  Slider(
-                    value: _sliderValue,
-                    min: 0,
-                    max: 4,
-                    divisions: 4,
-                    activeColor: Colors.blue,
-                    label: _sliderValue == 0
-                        ? 'Never'
-                        : _sliderValue == 1
-                            ? 'Rarely'
-                            : _sliderValue == 2
-                                ? 'Sometimes'
-                                : _sliderValue == 3
-                                    ? 'Often'
-                                    : 'Always',
-                    onChanged: (value) {
-                      setState(() {
-                        _sliderValue = value;
-                      });
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _nextPage,
-                    child: Text(
-                      index < questions.length ? "Next" : "Submit",
-                      style: TextStyle(color: Colors.blue),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.blue,
+          title: Text('Need Help?'),
+        ),
+        body: PageView.builder(
+          controller: _pageController,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: questions.length + 1, // Add one for the introductory page
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              // Introductory page
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "We will ask you a few questions to assist you better.",
+                      style: TextStyle(fontSize: 24),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-        },
+                    SizedBox(height: 20),
+                    FloatingActionButton(
+                      backgroundColor: Colors.blue,
+                      onPressed: _nextPage,
+                      child: Icon(Icons.arrow_forward),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              // Question pages
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      questions[index - 1], // Adjust index for questions
+                      style: TextStyle(fontSize: 24),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+                    Slider(
+                      value: _sliderValue,
+                      min: 0,
+                      max: 4,
+                      divisions: 4,
+                      activeColor: Colors.blue,
+                      label: _sliderValue == 0
+                          ? 'Never'
+                          : _sliderValue == 1
+                              ? 'Rarely'
+                              : _sliderValue == 2
+                                  ? 'Sometimes'
+                                  : _sliderValue == 3
+                                      ? 'Often'
+                                      : 'Always',
+                      onChanged: (value) {
+                        setState(() {
+                          _sliderValue = value;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _nextPage,
+                      child: Text(
+                        index < questions.length ? "Next" : "Submit",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }

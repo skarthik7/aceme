@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:aceme/theme_provider.dart';
 
 class PlannerPage extends StatefulWidget {
   @override
@@ -125,81 +127,88 @@ class _PlannerPageState extends State<PlannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Planner'), backgroundColor: Colors.blue),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('tasks').orderBy('createdAt').snapshots(),
-        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final tasks = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              var task = tasks[index];
-              return Dismissible(
-                key: Key(task.id),
-                background: Container(
-                  color: Colors.green,
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(Icons.check, color: Colors.white),
-                ),
-                secondaryBackground: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(Icons.delete, color: Colors.white),
-                ),
-                confirmDismiss: (direction) async {
-                  if (direction == DismissDirection.startToEnd) {
-                    task.reference.update({'completed': true});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Task '${task['title']}' marked as done")),
-                    );
-                    return false; // Prevents the item from being dismissed
-                  } else if (direction == DismissDirection.endToStart) {
-                    task.reference.delete();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Task '${task['title']}' deleted")),
-                    );
-                    return true; // Allows the item to be dismissed
-                  }
-                  return false;
-                },
-                child: Card(
-                  child: ListTile(
-                    title: Text(
-                      task['title'],
-                      style: TextStyle(
-                        decoration: task['completed'] ? TextDecoration.lineThrough : TextDecoration.none,
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: Scaffold(
+        appBar: AppBar(title: Text('Planner'), backgroundColor: Colors.blue),
+        body: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('tasks').orderBy('createdAt').snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            final tasks = snapshot.data!.docs;
+            return ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                var task = tasks[index];
+                return Dismissible(
+                  key: Key(task.id),
+                  background: Container(
+                    color: Colors.green,
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(Icons.check, color: Colors.white),
+                  ),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Icon(Icons.delete, color: Colors.white),
+                  ),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.startToEnd) {
+                      task.reference.update({'completed': true});
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Task '${task['title']}' marked as done")),
+                      );
+                      return false; // Prevents the item from being dismissed
+                    } else if (direction == DismissDirection.endToStart) {
+                      task.reference.delete();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Task '${task['title']}' deleted")),
+                      );
+                      return true; // Allows the item to be dismissed
+                    }
+                    return false;
+                  },
+                  child: Card(
+                    child: ListTile(
+                      title: Text(
+                        task['title'],
+                        style: TextStyle(
+                          decoration: task['completed'] ? TextDecoration.lineThrough : TextDecoration.none,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("📌 ${task['description']}"),
+                          Text("📅 Due: ${DateFormat('yyyy-MM-dd').format(task['dueDate'].toDate())}"),
+                          Text("📂 Category: ${task['category']}"),
+                          Text("⚡ Priority: ${task['priority']}"),
+                        ],
+                      ),
+                      leading: Checkbox(
+                        value: task['completed'],
+                        onChanged: (bool? value) => task.reference.update({'completed': value}),
                       ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("📌 ${task['description']}"),
-                        Text("📅 Due: ${DateFormat('yyyy-MM-dd').format(task['dueDate'].toDate())}"),
-                        Text("📂 Category: ${task['category']}"),
-                        Text("⚡ Priority: ${task['priority']}"),
-                      ],
-                    ),
-                    leading: Checkbox(
-                      value: task['completed'],
-                      onChanged: (bool? value) => task.reference.update({'completed': value}),
-                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTaskDialog,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+                );
+              },
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showAddTaskDialog,
+          child: Icon(Icons.add),
+          backgroundColor: Colors.blue,
+        ),
       ),
     );
   }

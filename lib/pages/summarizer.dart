@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf_text/pdf_text.dart';
+import 'package:provider/provider.dart';
+import 'package:aceme/theme_provider.dart';
 
 class SummarizerPage extends StatefulWidget {
   @override
@@ -12,7 +14,7 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'YOUR_API_KEY';
+  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
   List<Map<String, dynamic>> _pdfList = [];
   double _summaryLength = 1.0; // Default to medium summary
 
@@ -186,36 +188,43 @@ class _SummarizerPageState extends State<SummarizerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Note Summarizer'), backgroundColor: Colors.blue,),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _pdfList.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_pdfList[index]['name']!),
-                    trailing: ElevatedButton(
-                      onPressed: () => _viewSummary(_pdfList[index]['summary']!),
-                      child: Text(
-                        'View Summary',
-                        style: TextStyle(color: Colors.blue), // Set the text color to blue
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: Scaffold(
+        appBar: AppBar(title: Text('Note Summarizer'), backgroundColor: Colors.blue,),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _pdfList.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(_pdfList[index]['name']!),
+                      trailing: ElevatedButton(
+                        onPressed: () => _viewSummary(_pdfList[index]['summary']!),
+                        child: Text(
+                          'View Summary',
+                          style: TextStyle(color: Colors.blue), // Set the text color to blue
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickAndExtractPdf,
-        backgroundColor: Colors.blue, // Set the button color to blue
-        child: Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _pickAndExtractPdf,
+          backgroundColor: Colors.blue, // Set the button color to blue
+          child: Icon(Icons.add),
+        ),
       ),
     );
   }

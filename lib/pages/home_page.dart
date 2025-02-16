@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:aceme/auth.dart';
 import 'package:aceme/pages/summarizer.dart';
-import 'package:aceme/pages/testme.dart';
+import 'package:aceme/pages/acebot.dart';
 import 'package:aceme/pages/planner.dart';
 import 'package:aceme/pages/account.dart';
 import 'package:aceme/pages/needhelp.dart';
+import 'package:provider/provider.dart';
+import 'package:aceme/theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -48,6 +50,82 @@ class _HomePageState extends State<HomePage> {
     return quotes[index];
   }
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showWelcomeDialog();
+    });
+  }
+
+  void _showWelcomeDialog() {
+    double sliderValue = 0.0;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Welcome!'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(getRandomQuote()),
+              SizedBox(height: 20),
+              Text('Swipe to ace!'),
+              SizedBox(height: 20),
+              StatefulBuilder(
+                builder: (context, setState) {
+                  return GestureDetector(
+                    onHorizontalDragUpdate: (details) {
+                      setState(() {
+                        sliderValue += details.primaryDelta! / 200;
+                        if (sliderValue >= 1.0) {
+                          sliderValue = 1.0;
+                          Navigator.of(context).pop();
+                        } else if (sliderValue < 0.0) {
+                          sliderValue = 0.0;
+                        }
+                      });
+                    },
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: sliderValue * (MediaQuery.of(context).size.width - 100),
+                            child: Container(
+                              height: 50,
+                              width: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  sliderValue == 1.0 ? 'Done' : 'Swipe',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> signOut() async {
     await Auth().signOut();
   }
@@ -76,7 +154,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return SummarizerPage();
       case 1:
-        return TestMePage();
+        return AceBoPage();
       case 2:
         return PlannerPage();
       case 3:
@@ -90,15 +168,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
-      theme: ThemeData(
-        bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.blue,
-          selectedLabelStyle: TextStyle(color: Colors.blue),
-          unselectedLabelStyle: TextStyle(color: Colors.blue),
-        ),
-      ),
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
       home: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.blue,
@@ -112,7 +187,6 @@ class _HomePageState extends State<HomePage> {
                     '🔥 47',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  
                 ],
               ),
             ],
@@ -137,8 +211,8 @@ class _HomePageState extends State<HomePage> {
               label: 'Summary',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.quiz),
-              label: 'Test',
+              icon: Icon(Icons.chat),
+              label: 'AceBot',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),

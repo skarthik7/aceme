@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:aceme/auth.dart';
 import 'package:aceme/pages/login_register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:aceme/theme_provider.dart';
 
 class Account extends StatelessWidget {
   final String? email;
@@ -103,6 +105,7 @@ class Account extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String username = _getUsername(email);
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -137,6 +140,15 @@ class Account extends StatelessWidget {
               leading: Icon(Icons.logout, color: Colors.red),
               title: Text('Sign out', style: TextStyle(color: Colors.red)),
               onTap: () => signOut(context),
+            ),
+            Divider(),
+            SwitchListTile(
+              title: Text('Dark Mode'),
+              value: themeProvider.isDarkMode,
+              onChanged: (value) {
+                themeProvider.toggleTheme(value);
+              },
+              secondary: Icon(themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
             ),
           ],
         ),
