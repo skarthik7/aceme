@@ -15,84 +15,90 @@ class Account extends StatelessWidget {
   }
 
   Future<void> signOut(BuildContext context) async {
-    await Auth().signOut();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
+    try {
+      await Auth().signOut();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    } catch (e) {
+      print('Error signing out: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out. Please try again.')),
+      );
+    }
   }
 
   Future<void> _changePassword(BuildContext context) async {
-  final TextEditingController currentPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
-  String? errorMessage;
+    final TextEditingController currentPasswordController = TextEditingController();
+    final TextEditingController newPasswordController = TextEditingController();
+    String? errorMessage;
 
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Change Password'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              TextField(
-                controller: currentPasswordController,
-                decoration: InputDecoration(
-                  labelText: 'Current Password',
-                  errorText: errorMessage,
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Change Password'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: currentPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Current Password',
+                    errorText: errorMessage,
+                  ),
+                  obscureText: true,
                 ),
-                obscureText: true,
-              ),
-              TextField(
-                controller: newPasswordController,
-                decoration: InputDecoration(
-                  labelText: 'New Password',
+                TextField(
+                  controller: newPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'New Password',
+                  ),
+                  obscureText: true,
                 ),
-                obscureText: true,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: Text('Change'),
-            onPressed: () async {
-              try {
-                User? user = FirebaseAuth.instance.currentUser;
-                String email = user?.email ?? '';
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Change'),
+              onPressed: () async {
+                try {
+                  User? user = FirebaseAuth.instance.currentUser;
+                  String email = user?.email ?? '';
 
-                AuthCredential credential = EmailAuthProvider.credential(
-                  email: email,
-                  password: currentPasswordController.text,
-                );
-                await user?.reauthenticateWithCredential(credential);
-                await user?.updatePassword(newPasswordController.text);
+                  AuthCredential credential = EmailAuthProvider.credential(
+                    email: email,
+                    password: currentPasswordController.text,
+                  );
+                  await user?.reauthenticateWithCredential(credential);
+                  await user?.updatePassword(newPasswordController.text);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Password changed successfully')),
-                );
-                Navigator.of(context).pop();
-              } on FirebaseAuthException catch (e) {
-                // Custom error handling based on exception code
-                if (e.code == 'invalid-credential') {
-                  errorMessage = 'Incorrect Password';
-                } else {
-                  errorMessage = e.message;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Password changed successfully')),
+                  );
+                  Navigator.of(context).pop();
+                } on FirebaseAuthException catch (e) {
+                  // Custom error handling based on exception code
+                  if (e.code == 'invalid-credential') {
+                    errorMessage = 'Incorrect Password';
+                  } else {
+                    errorMessage = e.message;
+                  }
+                  (context as Element).markNeedsBuild();
                 }
-                (context as Element).markNeedsBuild();
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

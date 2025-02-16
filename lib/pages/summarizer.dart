@@ -12,9 +12,9 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'YOUR_API_KEY';
   List<Map<String, dynamic>> _pdfList = [];
-
+  double _summaryLength = 1.0; // Default to medium summary
 
   @override
   void initState() {
@@ -35,42 +35,71 @@ class _SummarizerPageState extends State<SummarizerPage> {
     });
   }
 
-  /// Opens a dialog to enter a name for the PDF
-  Future<String?> _promptForPdfName() async {
+  /// Opens a dialog to enter a name for the PDF and select summary length
+  Future<Map<String, dynamic>?> _promptForPdfDetails() async {
     String? pdfName;
-    await showDialog<String>(
+    double summaryLength = 1.0; // Default to medium summary
+
+    await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (BuildContext context) {
         TextEditingController controller = TextEditingController();
         return AlertDialog(
           title: Text('Enter PDF Name and Upload'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(hintText: 'PDF Name'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  pdfName = controller.text;
-                  Navigator.of(context).pop();
-                },
-                child: Text('Upload PDF'),
-              ),
-            ],
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: controller,
+                    decoration: InputDecoration(hintText: 'PDF Name'),
+                  ),
+                  SizedBox(height: 20),
+                  Text('Select Summary Length'),
+                  Slider(
+                    value: summaryLength,
+                    min: 0.0,
+                    max: 2.0,
+                    divisions: 2,
+                    label: summaryLength == 0.0 ? 'Short' : summaryLength == 1.0 ? 'Medium' : 'Long',
+                    onChanged: (value) {
+                      setState(() {
+                        summaryLength = value;
+                      });
+                    },
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      pdfName = controller.text;
+                      Navigator.of(context).pop({
+                        'pdfName': pdfName,
+                        'summaryLength': summaryLength,
+                      });
+                    },
+                    child: Text('Upload PDF'),
+                  ),
+                ],
+              );
+            },
           ),
         );
       },
     );
-    return pdfName;
+
+    if (pdfName != null && pdfName!.isNotEmpty) {
+      return {
+        'pdfName': pdfName,
+        'summaryLength': summaryLength,
+      };
+    }
+    return null;
   }
 
   /// Picks a PDF, extracts text, and sends it for summarization
   Future<void> _pickAndExtractPdf() async {
-    String? pdfName = await _promptForPdfName();
-    if (pdfName != null && pdfName.isNotEmpty) {
+    Map<String, dynamic>? pdfDetails = await _promptForPdfDetails();
+    if (pdfDetails != null) {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
@@ -80,14 +109,23 @@ class _SummarizerPageState extends State<SummarizerPage> {
         File file = File(result.files.single.path!);
         PDFDoc doc = await PDFDoc.fromFile(file);
         String text = await doc.text;
-        _summarizeText(text, pdfName);
+        _summarizeText(text, pdfDetails['pdfName'], pdfDetails['summaryLength']);
       }
     }
   }
 
   /// Calls Gemini AI API to summarize text and stores result in Firestore
-  Future<void> _summarizeText(String text, String pdfName) async {
+  Future<void> _summarizeText(String text, String pdfName, double summaryLength) async {
     final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey';
+
+    String lengthPrompt;
+    if (summaryLength == 0.0) {
+      lengthPrompt = 'short';
+    } else if (summaryLength == 1.0) {
+      lengthPrompt = 'medium';
+    } else {
+      lengthPrompt = 'long';
+    }
 
     final response = await http.post(
       Uri.parse(url),
@@ -96,7 +134,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
         'contents': [
           {
             'parts': [
-              {'text': 'Summarize the following text: $text'}
+              {'text': 'Summarize the following text in a $lengthPrompt summary: $text'}
             ]
           }
         ]
@@ -106,8 +144,8 @@ class _SummarizerPageState extends State<SummarizerPage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       String summary = (data['candidates']?.isNotEmpty ?? false) &&
-              (data['candidates'][0]['content']['parts']?.isNotEmpty ?? false)
-          ? data['candidates'][0]['content']['parts'][0]['text']
+              (data['candidates']?[0]['content']['parts']?.isNotEmpty ?? false)
+          ? data['candidates']![0]['content']['parts'][0]['text']
           : 'Failed to generate summary';
 
       // Store summary in Firestore
@@ -162,7 +200,10 @@ class _SummarizerPageState extends State<SummarizerPage> {
                     title: Text(_pdfList[index]['name']!),
                     trailing: ElevatedButton(
                       onPressed: () => _viewSummary(_pdfList[index]['summary']!),
-                      child: Text('View Summary'),
+                      child: Text(
+                        'View Summary',
+                        style: TextStyle(color: Colors.blue), // Set the text color to blue
+                      ),
                     ),
                   );
                 },
@@ -173,6 +214,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _pickAndExtractPdf,
+        backgroundColor: Colors.blue, // Set the button color to blue
         child: Icon(Icons.add),
       ),
     );

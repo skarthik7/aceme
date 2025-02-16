@@ -140,18 +140,33 @@ class _PlannerPageState extends State<PlannerPage> {
               var task = tasks[index];
               return Dismissible(
                 key: Key(task.id),
-                direction: DismissDirection.endToStart,
                 background: Container(
+                  color: Colors.green,
+                  alignment: Alignment.centerLeft,
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Icon(Icons.check, color: Colors.white),
+                ),
+                secondaryBackground: Container(
                   color: Colors.red,
                   alignment: Alignment.centerRight,
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Icon(Icons.delete, color: Colors.white),
                 ),
-                onDismissed: (direction) {
-                  task.reference.delete();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Task '${task['title']}' deleted")),
-                  );
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    task.reference.update({'completed': true});
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Task '${task['title']}' marked as done")),
+                    );
+                    return false; // Prevents the item from being dismissed
+                  } else if (direction == DismissDirection.endToStart) {
+                    task.reference.delete();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Task '${task['title']}' deleted")),
+                    );
+                    return true; // Allows the item to be dismissed
+                  }
+                  return false;
                 },
                 child: Card(
                   child: ListTile(
