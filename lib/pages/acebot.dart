@@ -17,6 +17,7 @@ class _AceBoPageState extends State<AceBoPage> {
     setState(() {
       _messages.add({'role': 'user', 'text': message});
     });
+    
 
     final response = await http.post(
       Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey'),
