@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:pdf_text/pdf_text.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:pdf_text/pdf_text.dart';
 
 class SummarizerPage extends StatefulWidget {
   @override
@@ -11,27 +12,30 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  String _summary = '';
   final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
-  List<Map<String, String>> _pdfList = [];
+  List<Map<String, dynamic>> _pdfList = [];
 
-  Future<void> _pickAndExtractPdf() async {
-    String? pdfName = await _promptForPdfName();
-    if (pdfName != null && pdfName.isNotEmpty) {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf'],
-      );
 
-      if (result != null) {
-        File file = File(result.files.single.path!);
-        PDFDoc doc = await PDFDoc.fromFile(file);
-        String text = await doc.text;
-        _summarizeText(text, pdfName);
-      }
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadSummaries(); // Fetch stored summaries on page load
   }
 
+  /// Fetches stored summaries from Firestore
+  Future<void> _loadSummaries() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('summaries').get();
+    setState(() {
+      _pdfList = snapshot.docs.map((doc) {
+        return {
+          'name': doc['name'],
+          'summary': doc['summary'],
+        };
+      }).toList();
+    });
+  }
+
+  /// Opens a dialog to enter a name for the PDF
   Future<String?> _promptForPdfName() async {
     String? pdfName;
     await showDialog<String>(
@@ -49,7 +53,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () async {
+                onPressed: () {
                   pdfName = controller.text;
                   Navigator.of(context).pop();
                 },
@@ -63,71 +67,77 @@ class _SummarizerPageState extends State<SummarizerPage> {
     return pdfName;
   }
 
-  Future<void> _summarizeText(String text, String pdfName) async {
-    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey';
-    int retryCount = 0;
-    const int maxRetries = 3;
-    const int initialDelay = 2; // in seconds
-
-    while (retryCount < maxRetries) {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'contents': [
-            {
-              'parts': [
-                {'text': 'Summarize the following text.: $text'}
-              ]
-            }
-          ]
-        }),
+  /// Picks a PDF, extracts text, and sends it for summarization
+  Future<void> _pickAndExtractPdf() async {
+    String? pdfName = await _promptForPdfName();
+    if (pdfName != null && pdfName.isNotEmpty) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print('Response data: $data'); // Debugging line to print the response data
-        if (data != null && data['candidates'] != null && data['candidates'].isNotEmpty && data['candidates'][0]['content'] != null && data['candidates'][0]['content']['parts'] != null && data['candidates'][0]['content']['parts'].isNotEmpty) {
-          setState(() {
-            _pdfList.add({'name': pdfName, 'summary': data['candidates'][0]['content']['parts'][0]['text']});
-          });
-        } else {
-          setState(() {
-            _pdfList.add({'name': pdfName, 'summary': 'Failed to summarize text: Invalid response format'});
-          });
-        }
-        return;
-      } else if (response.statusCode == 429) {
-        // Too many requests, wait and retry
-        retryCount++;
-        await Future.delayed(Duration(seconds: initialDelay * retryCount));
-      } else {
-        setState(() {
-          _pdfList.add({'name': pdfName, 'summary': 'Failed to summarize text: ${response.reasonPhrase}'});
-        });
-        return;
+      if (result != null) {
+        File file = File(result.files.single.path!);
+        PDFDoc doc = await PDFDoc.fromFile(file);
+        String text = await doc.text;
+        _summarizeText(text, pdfName);
       }
     }
-
-    setState(() {
-      _pdfList.add({'name': pdfName, 'summary': 'Failed to summarize text: Too many requests'});
-    });
   }
 
+  /// Calls Gemini AI API to summarize text and stores result in Firestore
+  Future<void> _summarizeText(String text, String pdfName) async {
+    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_apiKey';
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'contents': [
+          {
+            'parts': [
+              {'text': 'Summarize the following text: $text'}
+            ]
+          }
+        ]
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      String summary = (data['candidates']?.isNotEmpty ?? false) &&
+              (data['candidates'][0]['content']['parts']?.isNotEmpty ?? false)
+          ? data['candidates'][0]['content']['parts'][0]['text']
+          : 'Failed to generate summary';
+
+      // Store summary in Firestore
+      await FirebaseFirestore.instance.collection('summaries').add({
+        'name': pdfName,
+        'summary': summary,
+      });
+
+      // Update UI
+      setState(() {
+        _pdfList.add({'name': pdfName, 'summary': summary});
+      });
+    } else {
+      setState(() {
+        _pdfList.add({'name': pdfName, 'summary': 'Error: ${response.reasonPhrase}'});
+      });
+    }
+  }
+
+  /// Displays a dialog with the summary text
   void _viewSummary(String summary) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Summary'),
-          content: SingleChildScrollView(
-            child: Text(summary),
-          ),
-          actions: <Widget>[
+          content: SingleChildScrollView(child: Text(summary)),
+          actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('Close'),
             ),
           ],
@@ -139,9 +149,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Your notes summarized!'),
-      ),
+      appBar: AppBar(title: Text('Note Summarizer'), backgroundColor: Colors.blue,),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
