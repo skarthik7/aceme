@@ -37,6 +37,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.11.0
   firebase_auth: ^5.4.2
+  url_launcher: ^6.0.20
+  cloud_firestore: ^5.6.3
+  intl: ^0.17.0
+  file_picker: ^4.6.1
+  http: ^0.13.0
+  pdf_text: ^0.5.0
+  shared_preferences: ^2.2.2
+  material_symbols_icons: ^4.2719.0
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +69,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/betterhelp-logo-square.png
+    - assets/images/logo.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
