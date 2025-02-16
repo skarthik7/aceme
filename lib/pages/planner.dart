@@ -134,7 +134,15 @@ class _PlannerPageState extends State<PlannerPage> {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       home: Scaffold(
-        appBar: AppBar(title: Text('Planner'), backgroundColor: Colors.blue),
+        appBar: AppBar(
+          title: Text('Planner'),
+          backgroundColor: Colors.blue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(30),
+            ),
+          ),
+        ),
         body: StreamBuilder(
           stream: FirebaseFirestore.instance.collection('tasks').orderBy('createdAt').snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {

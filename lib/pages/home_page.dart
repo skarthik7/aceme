@@ -43,111 +43,7 @@ class _HomePageState extends State<HomePage> {
     "Believe in yourself and all that you are.",
     "Hard work beats talent when talent doesn’t work hard.",
   ];
-
-  String getRandomQuote() {
-    final random = Random();
-    int index = random.nextInt(quotes.length);
-    return quotes[index];
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showWelcomeDialog();
-    });
-  }
-
-  void _showWelcomeDialog() {
-    double sliderValue = 0.0;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Welcome!'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(getRandomQuote()),
-              SizedBox(height: 20),
-              Text('Swipe to ace!'),
-              SizedBox(height: 20),
-              StatefulBuilder(
-                builder: (context, setState) {
-                  return GestureDetector(
-                    onHorizontalDragUpdate: (details) {
-                      setState(() {
-                        sliderValue += details.primaryDelta! / 200;
-                        if (sliderValue >= 1.0) {
-                          sliderValue = 1.0;
-                          Navigator.of(context).pop();
-                        } else if (sliderValue < 0.0) {
-                          sliderValue = 0.0;
-                        }
-                      });
-                    },
-                    child: Container(
-                      height: 50,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: sliderValue * (MediaQuery.of(context).size.width - 100),
-                            child: Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  sliderValue == 1.0 ? 'Done' : 'Swipe',
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> signOut() async {
-    await Auth().signOut();
-  }
-
-  String _getUsername(String? email) {
-    if (email == null) return 'User';
-    return email.split('@')[0];
-  }
-
-  Widget _title() {
-    return Text('AceMe');
-  }
-
-  Widget _userUid() {
-    return Text(_getUsername(user?.email));
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  
 
   Widget _getPage(int index) {
     switch (index) {
@@ -166,6 +62,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -175,35 +77,7 @@ class _HomePageState extends State<HomePage> {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blue,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _title(),
-              Row(
-                children: [
-                  Text(
-                    '🔥 47',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          padding: const EdgeInsets.all(21),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Expanded(child: _getPage(_selectedIndex)), // Show the selected page here
-            ],
-          ),
-        ),
+        body: _getPage(_selectedIndex), // Show the selected page here
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(

@@ -112,6 +112,11 @@ class Account extends StatelessWidget {
         title: Text("Account"),
         centerTitle: true,
         backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),

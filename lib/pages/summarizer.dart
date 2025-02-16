@@ -14,7 +14,7 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'YOUR_API_KEY_HERE';
   List<Map<String, dynamic>> _pdfList = [];
   double _summaryLength = 1.0; // Default to medium summary
 
@@ -190,41 +190,44 @@ class _SummarizerPageState extends State<SummarizerPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    return MaterialApp(
-      themeMode: themeProvider.themeMode,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      home: Scaffold(
-        appBar: AppBar(title: Text('Note Summarizer'), backgroundColor: Colors.blue,),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _pdfList.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(_pdfList[index]['name']!),
-                      trailing: ElevatedButton(
-                        onPressed: () => _viewSummary(_pdfList[index]['summary']!),
-                        child: Text(
-                          'View Summary',
-                          style: TextStyle(color: Colors.blue), // Set the text color to blue
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Note Summarizer'),
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(30),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _pickAndExtractPdf,
-          backgroundColor: Colors.blue, // Set the button color to blue
-          child: Icon(Icons.add),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: _pdfList.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_pdfList[index]['name']!),
+                    trailing: ElevatedButton(
+                      onPressed: () => _viewSummary(_pdfList[index]['summary']!),
+                      child: Text(
+                        'View Summary',
+                        style: TextStyle(color: Colors.blue), // Set the text color to blue
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _pickAndExtractPdf,
+        backgroundColor: Colors.blue, // Set the button color to blue
+        child: Icon(Icons.add),
       ),
     );
   }

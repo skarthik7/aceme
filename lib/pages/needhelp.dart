@@ -113,6 +113,11 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
         appBar: AppBar(
           backgroundColor: Colors.blue,
           title: Text('Need Help?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(30),
+            ),
+          ),
         ),
         body: PageView.builder(
           controller: _pageController,
