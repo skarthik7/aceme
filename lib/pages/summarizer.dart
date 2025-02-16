@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:pdf_text/pdf_text.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:pdf_text/pdf_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
 
@@ -16,20 +17,40 @@ class SummarizerPage extends StatefulWidget {
 class _SummarizerPageState extends State<SummarizerPage> {
   final String _apiKey = 'YOUR_API_KEY_HERE';
   List<Map<String, dynamic>> _pdfList = [];
+  String? _userEmail;   
   double _summaryLength = 1.0; // Default to medium summary
 
   @override
   void initState() {
     super.initState();
-    _loadSummaries(); // Fetch stored summaries on page load
+    _getCurrentUser();
   }
 
-  /// Fetches stored summaries from Firestore
+  /// Get the currently logged-in user's email
+  Future<void> _getCurrentUser() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    print(user);
+    if (user != null) {
+      setState(() {
+        _userEmail = user.email;
+      });
+      _loadSummaries();
+    }
+  }
+
+  /// Fetches stored summaries for the logged-in user
   Future<void> _loadSummaries() async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('summaries').get();
+    if (_userEmail == null) return;
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('summaries')
+        .where('email', isEqualTo: _userEmail) // Fetch only user's summaries
+        .get();
+
     setState(() {
       _pdfList = snapshot.docs.map((doc) {
         return {
+          'user': _userEmail,
           'name': doc['name'],
           'summary': doc['summary'],
         };
@@ -100,6 +121,13 @@ class _SummarizerPageState extends State<SummarizerPage> {
 
   /// Picks a PDF, extracts text, and sends it for summarization
   Future<void> _pickAndExtractPdf() async {
+    if (_userEmail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You need to be logged in!')),
+      );
+      return;
+    }
+
     Map<String, dynamic>? pdfDetails = await _promptForPdfDetails();
     if (pdfDetails != null) {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -150,10 +178,12 @@ class _SummarizerPageState extends State<SummarizerPage> {
           ? data['candidates']![0]['content']['parts'][0]['text']
           : 'Failed to generate summary';
 
-      // Store summary in Firestore
+      // Store summary in Firestore with user's email
       await FirebaseFirestore.instance.collection('summaries').add({
         'name': pdfName,
         'summary': summary,
+        'email': _userEmail, // Store user email
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
       // Update UI
