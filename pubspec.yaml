@@ -38,6 +38,9 @@ dependencies:
   firebase_core: ^3.11.0
   firebase_auth: ^5.4.2
   url_launcher: ^6.0.20
+  file_picker: ^4.0.0
+  pdf_text: ^0.5.0
+  http: ^0.13.3
   cloud_firestore: ^5.6.3
   intl: ^0.17.0
 

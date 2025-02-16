@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:aceme/pages/planner.dart'; // Import the PlannerPage
 
 class NeedHelpPage extends StatefulWidget {
   @override
@@ -15,13 +16,10 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
     "How often do you feel overwhelmed with your studies?",
     "How often do you have trouble concentrating or staying motivated?",
     "How often do you feel anxious about exams or assignments?",
-    "How often do you feel down or unmotivated for extended periods?",
     "How often do you struggle to enjoy things you used to like?",
     "How often do you struggle with sleep, either too much or too little?",
-    "How often do you feel isolated or disconnected from friends and family?",
     "How often do you experience stress that feels unmanageable?",
     "How often do you skip meals or overeat due to stress?",
-    "How often do you procrastinate due to anxiety or feeling overwhelmed?",
   ];
 
   void _nextPage() {
@@ -73,7 +71,24 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Thanks for submitting"),
+                    content: Text("We will contact you soon."),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (context) => PlannerPage()),
+                            (Route<dynamic> route) => false,
+                          );
+                        },
+                        child: Text("OK"),
+                      ),
+                    ],
+                  ),
+                );
               },
               child: Text("OK"),
             ),
