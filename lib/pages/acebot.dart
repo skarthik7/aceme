@@ -15,7 +15,7 @@ class AceBoPage extends StatefulWidget {
 class _AceBoPageState extends State<AceBoPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'KEY-HERE';
   final ScrollController _scrollController = ScrollController();
   bool _isQuizMode = false;
   bool _isExpectingQuizResponse = false;
