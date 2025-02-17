@@ -63,7 +63,7 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
         'contents': [
           {
             'parts': [
-              {'text': 'GIVE ME a very short list of THINGS I CAN STUDY FOR THIS COURSE BEFORE TAKING IT TO HELP ME PREPARE: $courseText'}
+              {'text': 'GIVE ME a very short list of THINGS I CAN STUDY FOR THIS COURSE BEFORE TAKING IT TO HELP ME PREPARE, and also show classes of prereq(if any) as bullet points in the top (JUST CLASS NUMBERS): $courseText'}
             ]
           }
         ]
