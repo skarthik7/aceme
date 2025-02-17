@@ -15,10 +15,11 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'YOUR_API_KEY';
+  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
   List<Map<String, dynamic>> _pdfList = [];
   String? _userEmail;
   double _summaryLength = 1.0; // Default to medium summary
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -256,60 +257,167 @@ class _SummarizerPageState extends State<SummarizerPage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _pdfList.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                      title: Text(
-                        _pdfList[index]['name']!,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () => _viewSummary(_pdfList[index]['summary']!, index),
-                            child: Text(
-                              'View Summary',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteSummary(index),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value.toLowerCase(); // Store lowercase for case-insensitive search
+                });
+              },
+              style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black // Ensure black text in dark mode
+                  : Colors.black87, // Darker text in light mode for readability
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search summaries...',
+                prefixIcon: Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey[200], 
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30), 
+                  borderSide: BorderSide.none, 
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
               ),
             ),
-          ],
-        ),
+          ),
+          Expanded(
+            child: _pdfList.isEmpty
+                ? Center(
+                    child: Text(
+                      'No summaries available',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    )
+                : GridView.builder(
+                    padding: EdgeInsets.all(10),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, 
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.75,
+                    ),
+                    itemCount: _pdfList
+                        .where((pdf) => pdf['name']
+                            .toLowerCase()
+                            .contains(_searchQuery)) // Filter by search query
+                        .length,
+                    itemBuilder: (context, index) {
+                      final filteredList = _pdfList
+                          .where((pdf) => pdf['name']
+                              .toLowerCase()
+                              .contains(_searchQuery))
+                          .toList(); // Get filtered results
+                      return SummaryCard(
+                        name: filteredList[index]['name']!,
+                        summary: filteredList[index]['summary']!,
+                        onDelete: () => _deleteSummary(index),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _pickAndExtractPdf,
         backgroundColor: Colors.blue, // Set the button color to blue
         child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class SummaryCard extends StatefulWidget {
+  final String name;
+  final String summary;
+  final VoidCallback onDelete;
+
+  SummaryCard({required this.name, required this.summary, required this.onDelete});
+
+  @override
+  _SummaryCardState createState() => _SummaryCardState();
+}
+
+class _SummaryCardState extends State<SummaryCard> {
+  bool _isExpanded = false;
+
+  void _showFullSummary() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(widget.name),
+          content: SingleChildScrollView(
+            child: Text(widget.summary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              widget.name,
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  _isExpanded
+                      ? widget.summary
+                      : widget.summary.length > 100
+                          ? widget.summary.substring(0, 100) + '...'
+                          : widget.summary,
+                  textAlign: TextAlign.justify,
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: _showFullSummary,
+                  child: Text(
+                    'View',
+                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                TextButton(
+                  onPressed: widget.onDelete,
+                  child: Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

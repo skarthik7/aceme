@@ -124,18 +124,41 @@ class _AceBoPageState extends State<AceBoPage> {
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final message = _messages[index];
-                    return ListTile(
-                      title: message['role'] == 'user'
-                          ? Text(
-                              message['text']!,
-                              style: TextStyle(color: Colors.blue),
-                            )
-                          : MarkdownBody(
-                              data: message['text']!,
-                              styleSheet: MarkdownStyleSheet(
-                                p: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+
+                    return Align(
+                      alignment: message['role'] == 'user'
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? (message['role'] == 'user' ? Colors.blue : Colors.black) 
+                              : (message['role'] == 'user' ? Colors.blue[200] : Colors.grey[300]),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            topRight: Radius.circular(15),
+                            bottomLeft: message['role'] == 'user'
+                                ? Radius.circular(15)
+                                : Radius.circular(0),
+                            bottomRight: message['role'] == 'user'
+                                ? Radius.circular(0)
+                                : Radius.circular(15),
+                          ),
+                        ),
+                        child: message['role'] == 'user'
+                            ? Text(
+                                message['text']!,
+                                style: TextStyle(color: Colors.black),
+                              )
+                            : MarkdownBody(
+                                data: message['text']!,
+                                styleSheet: MarkdownStyleSheet(
+                                  p: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                                ),
                               ),
-                            ),
+                      ),
                     );
                   },
                 ),

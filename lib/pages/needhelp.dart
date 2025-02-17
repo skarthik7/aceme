@@ -122,7 +122,7 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
         body: PageView.builder(
           controller: _pageController,
           physics: NeverScrollableScrollPhysics(),
-          itemCount: questions.length + 1, // Add one for the introductory page
+          itemCount: questions.length + 1,
           itemBuilder: (context, index) {
             if (index == 0) {
               // Introductory page

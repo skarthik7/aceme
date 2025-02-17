@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aceme/auth.dart';
 import 'package:aceme/pages/login_register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
 import 'package:aceme/font_size_provider.dart'; 

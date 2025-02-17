@@ -25,11 +25,10 @@ class _PlannerPageState extends State<PlannerPage> {
       setState(() {
         _userEmail = user.email;
       });
-      print('User email: $_userEmail'); // Debug print to check user email
+      print('User email: $_userEmail');
     }
   }
 
-  /// Show a dialog to add a new task
   void _showAddTaskDialog() {
     TextEditingController titleController = TextEditingController();
     TextEditingController descriptionController = TextEditingController();
@@ -181,7 +180,11 @@ class _PlannerPageState extends State<PlannerPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text("No tasks yet. Add some!"));
+                  return Center(child: Text(
+                    "No tasks yet. Add some!",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    )
+                    );
                 }
 
                 final tasks = snapshot.data!.docs;
