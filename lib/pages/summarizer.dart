@@ -29,7 +29,6 @@ class _SummarizerPageState extends State<SummarizerPage> {
   /// Get the currently logged-in user's email
   Future<void> _getCurrentUser() async {
     User? user = FirebaseAuth.instance.currentUser;
-    print(user);
     if (user != null) {
       setState(() {
         _userEmail = user.email;

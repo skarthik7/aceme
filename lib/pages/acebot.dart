@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:aceme/font_size_provider.dart';
 import 'package:pdf_text/pdf_text.dart';
 
 class AceBoPage extends StatefulWidget {
@@ -16,6 +16,7 @@ class _AceBoPageState extends State<AceBoPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
   final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final ScrollController _scrollController = ScrollController();
   bool _isQuizMode = false;
   bool _isExpectingQuizResponse = false;
 
@@ -49,13 +50,25 @@ class _AceBoPageState extends State<AceBoPage> {
 
       setState(() {
         _messages.add({'role': 'bot', 'text': reply});
-        _isExpectingQuizResponse = _isQuizMode; // Set the flag if in quiz mode
+        _isExpectingQuizResponse = _isQuizMode;
       });
     } else {
       setState(() {
         _messages.add({'role': 'bot', 'text': 'Error: ${response.reasonPhrase}'});
       });
     }
+    
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(Duration(milliseconds: 300), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Future<void> _uploadPdfAndGenerateQuiz() async {
@@ -104,24 +117,36 @@ class _AceBoPageState extends State<AceBoPage> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return ListTile(
-                  title: message['role'] == 'user'
-                      ? Text(
-                          message['text']!,
-                          style: TextStyle(color: Colors.blue),
-                        )
-                      : MarkdownBody(
-                          data: message['text']!,
-                          styleSheet: MarkdownStyleSheet(
-                            p: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                          ),
-                        ),
-                );
-              },
+            child: Stack(
+              children: [
+                ListView.builder(
+                  controller: _scrollController,
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final message = _messages[index];
+                    return ListTile(
+                      title: message['role'] == 'user'
+                          ? Text(
+                              message['text']!,
+                              style: TextStyle(color: Colors.blue),
+                            )
+                          : MarkdownBody(
+                              data: message['text']!,
+                              styleSheet: MarkdownStyleSheet(
+                                p: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                              ),
+                            ),
+                    );
+                  },
+                ),
+                if (_messages.isEmpty)
+                  Center(
+                    child: Text(
+                      'What can I help with?',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ),
+              ],
             ),
           ),
           if (_isQuizMode && !_isExpectingQuizResponse)
@@ -132,7 +157,7 @@ class _AceBoPageState extends State<AceBoPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: Icon(Icons.attach_file),
-                      label: Text('Upload PDF'),
+                      label: Text('TestMe: Upload PDF'),
                       onPressed: _uploadPdfAndGenerateQuiz,
                     ),
                   ),
@@ -147,13 +172,15 @@ class _AceBoPageState extends State<AceBoPage> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Color(0xFFC3ECFE), // Set the background color to light blue
+                        color: isDarkMode ? Colors.blue : Color(0xFFC3ECFE),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: TextField(
                         controller: _controller,
+                        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                         decoration: InputDecoration(
                           hintText: 'Type your message...',
+                          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[700]),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),
