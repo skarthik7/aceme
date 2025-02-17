@@ -15,9 +15,9 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'YOUR_API_KEY';
   List<Map<String, dynamic>> _pdfList = [];
-  String? _userEmail;   
+  String? _userEmail;
   double _summaryLength = 1.0; // Default to medium summary
 
   @override
@@ -29,7 +29,6 @@ class _SummarizerPageState extends State<SummarizerPage> {
   /// Get the currently logged-in user's email
   Future<void> _getCurrentUser() async {
     User? user = FirebaseAuth.instance.currentUser;
-    print(user);
     if (user != null) {
       setState(() {
         _userEmail = user.email;
@@ -197,8 +196,8 @@ class _SummarizerPageState extends State<SummarizerPage> {
     }
   }
 
-  /// Displays a dialog with the summary text
-  void _viewSummary(String summary) {
+  /// Displays a dialog with the summary text and a delete button
+  void _viewSummary(String summary, int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -206,6 +205,13 @@ class _SummarizerPageState extends State<SummarizerPage> {
           title: Text('Summary'),
           content: SingleChildScrollView(child: Text(summary)),
           actions: [
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteSummary(index);
+              },
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text('Close'),
@@ -214,6 +220,26 @@ class _SummarizerPageState extends State<SummarizerPage> {
         );
       },
     );
+  }
+
+  /// Deletes a summary from Firestore and updates the UI
+  Future<void> _deleteSummary(int index) async {
+    String summaryName = _pdfList[index]['name'];
+    String userEmail = _pdfList[index]['user'] ?? _userEmail!;
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('summaries')
+        .where('name', isEqualTo: summaryName)
+        .where('email', isEqualTo: userEmail)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      await FirebaseFirestore.instance.collection('summaries').doc(doc.id).delete();
+    }
+
+    setState(() {
+      _pdfList.removeAt(index);
+    });
   }
 
   @override
@@ -238,13 +264,39 @@ class _SummarizerPageState extends State<SummarizerPage> {
               child: ListView.builder(
                 itemCount: _pdfList.length,
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_pdfList[index]['name']!),
-                    trailing: ElevatedButton(
-                      onPressed: () => _viewSummary(_pdfList[index]['summary']!),
-                      child: Text(
-                        'View Summary',
-                        style: TextStyle(color: Colors.blue), // Set the text color to blue
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                      title: Text(
+                        _pdfList[index]['name']!,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () => _viewSummary(_pdfList[index]['summary']!, index),
+                            child: Text(
+                              'View Summary',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteSummary(index),
+                          ),
+                        ],
                       ),
                     ),
                   );
