@@ -276,7 +276,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
                 hintText: 'Search summaries...',
                 prefixIcon: Icon(Icons.search),
                 filled: true,
-                fillColor: Colors.grey[200], 
+                // fillColor: Colors.grey[200], 
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30), 
                   borderSide: BorderSide.none, 
