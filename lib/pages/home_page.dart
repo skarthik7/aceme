@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return NeedHelpPage();
       case 4:
-        return Account(email: user?.email); // Pass the user's email
+        return Account(email: user?.email);
       default:
         return PlannerPage();
     }
