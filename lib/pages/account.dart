@@ -4,7 +4,7 @@ import 'package:aceme/pages/login_register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
-import 'package:aceme/font_size_provider.dart';
+import 'package:aceme/font_size_provider.dart'; 
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -77,17 +77,36 @@ class _AccountState extends State<Account> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.blue,
-              child: Text(
-                username[0], 
-                style: TextStyle(
-                  fontSize: fontSizeProvider.fontSize, // Apply dynamic font size
-                  color: Colors.white, 
-                  fontWeight: FontWeight.bold,
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.blue,
+                  backgroundImage: _image != null ? FileImage(_image!) : null,
+                  child: _image == null
+                      ? Text(
+                          username[0],
+                          style: TextStyle(
+                            fontSize: fontSizeProvider.fontSize, // Apply dynamic font size
+                            color: Colors.white, 
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
-              ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: InkWell(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 15,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.edit, size: 15, color: Colors.blue),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 10),
             Text(username, style: TextStyle(fontSize: fontSizeProvider.fontSize, fontWeight: FontWeight.bold)),
@@ -118,12 +137,6 @@ class _AccountState extends State<Account> {
               onTap: () {},
             ),
             Divider(),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Sign out', style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.red)),
-              onTap: () => signOut(context),
-            ),
-            Divider(),
 
             SwitchListTile(
               title: Text('Dark Mode', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
@@ -132,6 +145,13 @@ class _AccountState extends State<Account> {
                 themeProvider.toggleTheme(value);
               },
               secondary: Icon(themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            ),
+            Divider(),
+
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.red),
+              title: Text('Sign out', style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.red)),
+              onTap: () => signOut(context),
             ),
           ],
         ),
