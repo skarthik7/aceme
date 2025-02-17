@@ -1,16 +1,36 @@
-# aceme
+## Inspiration
+As students, we often struggled with managing long notes, preparing for exams, and maintaining mental well-being. We noticed that many of our peers faced similar challenges, so we set out to build a solution that combines AI-driven learning with mental health support to help students study smarter and stress less.  
 
-A new Flutter project.
+## What it does
+Ace Me is an all-in-one study assistant that helps students:  
+- **Summarize Notes:** AI-powered text summarization condenses lecture notes into key points.  
+- **Generate Quizzes:** Personalized quizzes help reinforce learning.  
+- **Support Mental Well-Being:** Integrated self-care tools and AI chat support offer guidance and stress management resources.  
+- **Enhance Accessibility:** Features like dark mode, adjustable font sizes, and voice support ensure an inclusive experience for all users.  
 
-## Getting Started
+## How we built it
+- **Gemini API:** For AI-driven text summarization and quiz generation.  
+- **Flutter & Firebase:** For a smooth, cross-platform experience with real-time updates.  
+- **Mental Health Features:** A combination of curated resources and AI-powered mindfulness support. 
+- **Accessibility Focus:** Implemented UI adjustments like dynamic font resizing and high-contrast mode.
 
-This project is a starting point for a Flutter application.
+## Challenges we ran into
+- **Optimizing AI Performance:** Ensuring the Gemini API produced concise, contextually relevant summaries.  
+- **User Experience:** Designing an intuitive interface that keeps students engaged.  
+- **Privacy & Security:** Balancing personalization with responsible data handling.  
 
-A few resources to get you started if this is your first Flutter project:
+## Accomplishments that we're proud of
+- Successfully integrating AI to enhance studying and mental well-being.  
+- Making the app accessible with features like font size customization, dark mode, and voice support.  
+- Building a functional, user-friendly app that simplifies student life.  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## What we learned
+- The power of AI in transforming the learning process.  
+- The importance of balancing technology with human needs, especially for mental health.  
+- How to iterate quickly based on user feedback to improve usability.  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## What's next for Ace Me
+- Expanding features, such as **collaborative study groups.**
+- **Partnering with educational institutions** to bring Ace Me to more students.  
+- **Expanding Accessibility:** Adding features like text-to-speech, dyslexia-friendly fonts, and multilingual support.  
+
