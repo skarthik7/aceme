@@ -55,7 +55,7 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
   }
 
   Future<void> _sendToGemini(String courseText) async {
-    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=KEY-HERE';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
