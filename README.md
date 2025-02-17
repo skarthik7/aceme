@@ -17,7 +17,7 @@ Ace Me is an all-in-one study assistant designed to help students study smarter,
 ## Getting Started  
 1. Clone the repository:  
     ```bash
-    git clone https://github.com/yourusername/aceme.git
+    git clone https://github.com/skarthik7/aceme.git
     ```
 2. Install dependencies:  
     ```bash
