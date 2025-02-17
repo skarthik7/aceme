@@ -3,7 +3,8 @@
 Ace Me is an all-in-one study assistant designed to help students study smarter, stay organized, and prioritize their mental well-being. With AI-powered tools for note summarization, personalized quizzes, and self-care resources, Ace Me is your ultimate academic companion.
 
 ## Features  
-- **Summarize Notes:** AI-driven text summarization condenses lecture notes into key points for quick review.  
+- **Summarize Notes:** AI-driven text summarization condenses lecture notes into key points for quick review.
+<img src="readmePics/summarize.png" width="500">
 - **Generate Quizzes:** Personalized quizzes help reinforce learning and track progress.  
 - **Support Mental Well-Being:** Integrated self-care tools and AI chat support offer mindfulness exercises and stress management resources.  
 - **Enhance Accessibility:** Customizable features like dark mode, adjustable font sizes, and voice support ensure an inclusive experience for all users.
