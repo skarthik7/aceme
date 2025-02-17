@@ -43,7 +43,40 @@ class _HomePageState extends State<HomePage> {
     "Believe in yourself and all that you are.",
     "Hard work beats talent when talent doesn’t work hard.",
   ];
-  
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showWelcomeDialog();
+    });
+  }
+
+  void _showWelcomeDialog() {
+    final random = Random();
+    final randomQuote = quotes[random.nextInt(quotes.length)];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Welcome to AceMe 😃'),
+          content: Text(
+            randomQuote,
+            style: TextStyle(fontSize: 18), // Increase the font size here
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _getPage(int index) {
     switch (index) {
