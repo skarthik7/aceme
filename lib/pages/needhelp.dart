@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
+import 'package:aceme/main.dart';
 
 class NeedHelpPage extends StatefulWidget {
   @override
@@ -86,6 +87,9 @@ class _NeedHelpPageState extends State<NeedHelpPage> {
                             _sliderValue = 0;
                           });
                           _pageController.jumpToPage(0);
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => MyApp()), // Replace with actual email
+                          );
                         },
                         child: Text("OK"),
                       ),

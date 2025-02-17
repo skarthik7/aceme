@@ -6,9 +6,9 @@ import 'package:aceme/pages/summarizer.dart';
 import 'package:aceme/pages/acebot.dart';
 import 'package:aceme/pages/planner.dart';
 import 'package:aceme/pages/account.dart';
-import 'package:aceme/pages/needhelp.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
+import 'package:aceme/pages/courseprep.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key? key}) : super(key: key);
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return PlannerPage();
       case 3:
-        return NeedHelpPage();
+        return CoursePrepPage();
       case 4:
         return Account(email: user?.email);
       default:
@@ -126,8 +126,8 @@ class _HomePageState extends State<HomePage> {
               label: 'Planner',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.help),
-              label: 'Help',
+              icon: Icon(Icons.book),
+              label: 'Course Prep',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),

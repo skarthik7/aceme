@@ -8,6 +8,7 @@ import 'package:aceme/theme_provider.dart';
 import 'package:aceme/font_size_provider.dart'; 
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:aceme/pages/needhelp.dart'; // Import the NeedHelp page
 
 class Account extends StatefulWidget {
   final String? email;
@@ -109,25 +110,31 @@ class _AccountState extends State<Account> {
   }
 
   Future<void> signOut(BuildContext context) async {
-  try {
-    await Auth().signOut();
+    try {
+      await Auth().signOut();
 
-    Future.delayed(Duration.zero, () {
+      Future.delayed(Duration.zero, () {
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        }
+      });
+    } catch (e) {
+      print('Error signing out: $e');
       if (context.mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => LoginPage()),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error signing out. Please try again.')),
         );
       }
-    });
-  } catch (e) {
-    print('Error signing out: $e');
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error signing out. Please try again.')),
-      );
     }
   }
-}
+
+  void _showHelpDialog(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => NeedHelpPage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +215,13 @@ class _AccountState extends State<Account> {
               leading: Icon(Icons.lock, color: Colors.blue),
               title: Text('Change Password', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
               onTap: () => _changePassword(context),
+            ),
+            Divider(),
+
+            ListTile(
+              leading: Icon(Icons.help, color: Colors.blue),
+              title: Text('Help', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+              onTap: () => _showHelpDialog(context),
             ),
             Divider(),
 
