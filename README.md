@@ -1,28 +1,36 @@
-# Aceme
+# Ace Me - Your AI-Powered Study Companion  
 
-Welcome to Aceme, a Flutter project designed to help you prepare for your courses by providing relevant study materials and prerequisites.
+Ace Me is an all-in-one study assistant designed to help students study smarter, stay organized, and prioritize their mental well-being. With AI-powered tools for note summarization, personalized quizzes, and self-care resources, Ace Me is your ultimate academic companion.
 
-## Getting Started
+## Features  
+- **Summarize Notes:** AI-driven text summarization condenses lecture notes into key points for quick review.<br />
+  <img src="readmePics/summaries.png" width="214">
+- **Generate Quizzes:** Personalized quizzes help reinforce learning and track progress. 
+- **Support Mental Well-Being:** Integrated self-care tools and AI chat support offer mindfulness exercises and stress management resources.<br />
+  <img src="readmePics/mental_health.png" width="214">
+- **Enhance Accessibility:** Customizable features like dark mode and adjustable font sizes ensure an inclusive experience for all users.<br />
+  <img src="readmePics/access.png" width="214">
+- **Course Prep:** Helps you prepare for a course before you take it!<br />
+  <img src="readmePics/courseprep.png" width="214">
+- **Planner:** Helps you plan your tasks.<br />
+    <img src="readmePics/planner.png" width="214">
 
-This project serves as a starting point for a Flutter application. Below are some instructions and resources to help you get started with Flutter development.
+## How We Built It  
+- **Gemini API:** For AI-powered text summarization and quiz generation.  
+- **Flutter & Firebase:** A smooth, cross-platform app with real-time updates and seamless syncing.  
+- **Mental Health Features:** Curated resources and AI-powered mindfulness support to help students maintain mental well-being.  
+- **Accessibility Focus:** UI adjustments like dynamic font resizing, high-contrast mode.
 
-### Prerequisites
-
-Before you begin, ensure you have met the following requirements:
-- You have installed Flutter SDK: [Flutter Installation Guide](https://docs.flutter.dev/get-started/install)
-- You have a code editor like Visual Studio Code or Android Studio
-- You have set up an emulator or a physical device for testing
-
-### Installation
-
-1. Clone the repository:
-   ```git clone https://github.com/skarthik7/aceme.git```
-
-2. Navigate to the project directory:
-    ```cd aceme```
-
-3.Install the dependencies:
+## Getting Started  
+1. Clone the repository:  
+    ```bash
+    git clone https://github.com/skarthik7/aceme.git
+    ```
+2. Install dependencies:  
+    ```bash
     flutter pub get
-
-Running the App
-    ```flutter run```
+    ```
+3. Run the app on your device:  
+    ```bash
+    flutter run
+    ```

@@ -16,7 +16,7 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'KEY-HERE';
+  final String _apiKey = 'KEY-here';
   List<Map<String, dynamic>> _pdfList = [];
   String? _userEmail;
   double _summaryLength = 1.0; // Default to medium summary
