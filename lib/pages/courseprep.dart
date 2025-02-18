@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart' as dom;
 import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:aceme/font_size_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CoursePrepPage extends StatefulWidget {
   @override
@@ -14,6 +17,12 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
   final TextEditingController _controller = TextEditingController();
   String _className = '';
   String _geminiResponse = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCourseData();
+  }
 
   void _submitClassName() {
     final courseName = _controller.text;
@@ -55,7 +64,7 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
   }
 
   Future<void> _sendToGemini(String courseText) async {
-    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+    final url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=KEY-HERE';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
@@ -78,6 +87,7 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
         setState(() {
           _geminiResponse = responseData['candidates'][0]['content']['parts'][0]['text'];
         });
+        _saveCourseData(_className, _geminiResponse);
       } else {
         setState(() {
           _geminiResponse = 'Invalid response from Gemini API';
@@ -90,8 +100,24 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
     }
   }
 
+  Future<void> _saveCourseData(String className, String geminiResponse) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('className', className);
+    prefs.setString('geminiResponse', geminiResponse);
+  }
+
+  Future<void> _loadCourseData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _className = prefs.getString('className') ?? '';
+      _geminiResponse = prefs.getString('geminiResponse') ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Course Prep'),
@@ -103,8 +129,10 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _controller,
+              style: TextStyle(fontSize: fontSizeProvider.fontSize),
               decoration: InputDecoration(
                 hintText: 'Search Course (e.g., CMPUT 175)',
+                hintStyle: TextStyle(fontSize: fontSizeProvider.fontSize),
                 prefixIcon: Icon(Icons.search),
                 suffixIcon: IconButton(
                   icon: Icon(Icons.send),
@@ -120,7 +148,7 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
             padding: const EdgeInsets.all(16.0),
             child: Text(
               _className,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: fontSizeProvider.fontSize, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
@@ -130,13 +158,13 @@ class _CoursePrepPageState extends State<CoursePrepPage> {
                   ? Center(
                       child: Text(
                         "Find specific course tips here! 💯",
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                        style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.grey),
                       ),
                     )
                   : Markdown(
                       data: _geminiResponse,
                       styleSheet: MarkdownStyleSheet(
-                        p: TextStyle(fontSize: 18),
+                        p: TextStyle(fontSize: fontSizeProvider.fontSize),
                       ),
                     ),
             ),

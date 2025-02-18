@@ -1,16 +1,28 @@
-# aceme
+# Aceme
 
-A new Flutter project.
+Welcome to Aceme, a Flutter project designed to help you prepare for your courses by providing relevant study materials and prerequisites.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project serves as a starting point for a Flutter application. Below are some instructions and resources to help you get started with Flutter development.
 
-A few resources to get you started if this is your first Flutter project:
+### Prerequisites
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Before you begin, ensure you have met the following requirements:
+- You have installed Flutter SDK: [Flutter Installation Guide](https://docs.flutter.dev/get-started/install)
+- You have a code editor like Visual Studio Code or Android Studio
+- You have set up an emulator or a physical device for testing
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Installation
+
+1. Clone the repository:
+   ```git clone https://github.com/skarthik7/aceme.git```
+
+2. Navigate to the project directory:
+    ```cd aceme```
+
+3.Install the dependencies:
+    flutter pub get
+
+Running the App
+    ```flutter run```

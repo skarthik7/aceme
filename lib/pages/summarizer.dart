@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
+import 'package:aceme/font_size_provider.dart';
 
 class SummarizerPage extends StatefulWidget {
   @override
@@ -15,7 +16,7 @@ class SummarizerPage extends StatefulWidget {
 }
 
 class _SummarizerPageState extends State<SummarizerPage> {
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'KEY-HERE';
   List<Map<String, dynamic>> _pdfList = [];
   String? _userEmail;
   double _summaryLength = 1.0; // Default to medium summary
@@ -246,6 +247,7 @@ class _SummarizerPageState extends State<SummarizerPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -268,9 +270,10 @@ class _SummarizerPageState extends State<SummarizerPage> {
                 });
               },
               style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.black // Ensure black text in dark mode
-                  : Colors.black87, // Darker text in light mode for readability
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.black // Ensure black text in dark mode
+                    : Colors.black87, // Darker text in light mode for readability
+                fontSize: fontSizeProvider.fontSize, // Apply dynamic font size
               ),
               decoration: InputDecoration(
                 hintText: 'Search summaries...',
@@ -290,9 +293,9 @@ class _SummarizerPageState extends State<SummarizerPage> {
                 ? Center(
                     child: Text(
                       'No summaries available',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                    )
+                      style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.grey),
+                    ),
+                  )
                 : GridView.builder(
                     padding: EdgeInsets.all(10),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -369,6 +372,8 @@ class _SummaryCardState extends State<SummaryCard> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(
@@ -381,7 +386,7 @@ class _SummaryCardState extends State<SummaryCard> {
           children: [
             Text(
               widget.name,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: fontSizeProvider.fontSize),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 10),
@@ -394,24 +399,29 @@ class _SummaryCardState extends State<SummaryCard> {
                           ? widget.summary.substring(0, 100) + '...'
                           : widget.summary,
                   textAlign: TextAlign.justify,
+                  style: TextStyle(fontSize: fontSizeProvider.fontSize),
                 ),
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextButton(
-                  onPressed: _showFullSummary,
-                  child: Text(
-                    'View',
-                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                Flexible(
+                  child: TextButton(
+                    onPressed: _showFullSummary,
+                    child: Text(
+                      'View',
+                      style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: fontSizeProvider.fontSize),
+                    ),
                   ),
                 ),
-                TextButton(
-                  onPressed: widget.onDelete,
-                  child: Text(
-                    'Delete',
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                Flexible(
+                  child: TextButton(
+                    onPressed: widget.onDelete,
+                    child: Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: fontSizeProvider.fontSize),
+                    ),
                   ),
                 ),
               ],

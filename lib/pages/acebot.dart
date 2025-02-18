@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -5,7 +6,9 @@ import 'dart:convert';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:aceme/font_size_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:pdf_text/pdf_text.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AceBoPage extends StatefulWidget {
   @override
@@ -15,16 +18,57 @@ class AceBoPage extends StatefulWidget {
 class _AceBoPageState extends State<AceBoPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
-  final String _apiKey = 'AIzaSyDEit47_ToU42NqvYTk_VN1jg5rVegRllo';
+  final String _apiKey = 'KEY-HERE';
   final ScrollController _scrollController = ScrollController();
   bool _isQuizMode = false;
   bool _isExpectingQuizResponse = false;
+  bool _isLoading = false;
+  String _loadingText = '.';
+  Timer? _loadingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMessages();
+  }
+
+  @override
+  void dispose() {
+    _loadingTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startLoadingAnimation() {
+    _loadingTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+      setState(() {
+        if (_loadingText == '.') {
+          _loadingText = '..';
+        } else if (_loadingText == '..') {
+          _loadingText = '...';
+        } else if (_loadingText == '...') {
+          _loadingText = '....';
+        } else {
+          _loadingText = '.';
+        }
+      });
+    });
+  }
+
+  void _stopLoadingAnimation() {
+    _loadingTimer?.cancel();
+    setState(() {
+      _loadingText = '.';
+    });
+  }
 
   Future<void> _sendMessage(String message, {bool displayMessage = true}) async {
     if (displayMessage) {
       setState(() {
         _messages.add({'role': 'user', 'text': message});
+        _isLoading = true;
       });
+      _startLoadingAnimation();
+      _saveMessages();
     }
 
     final response = await http.post(
@@ -51,14 +95,18 @@ class _AceBoPageState extends State<AceBoPage> {
       setState(() {
         _messages.add({'role': 'bot', 'text': reply});
         _isExpectingQuizResponse = _isQuizMode;
+        _isLoading = false;
       });
     } else {
       setState(() {
         _messages.add({'role': 'bot', 'text': 'Error: ${response.reasonPhrase}'});
+        _isLoading = false;
       });
     }
-    
+
+    _stopLoadingAnimation();
     _scrollToBottom();
+    _saveMessages();
   }
 
   void _scrollToBottom() {
@@ -90,13 +138,39 @@ class _AceBoPageState extends State<AceBoPage> {
     }
   }
 
+  Future<void> _saveMessages() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> messages = _messages.map((message) => json.encode(message)).toList();
+    prefs.setStringList('messages', messages);
+  }
+
+  Future<void> _loadMessages() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? messages = prefs.getStringList('messages');
+    if (messages != null) {
+      setState(() {
+        _messages.addAll(messages.map((message) => Map<String, String>.from(json.decode(message) as Map)).toList().cast<Map<String, String>>());
+      });
+    }
+  }
+
+  void _clearMessages() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('messages');
+    setState(() {
+      _messages.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('AceBot'),
+        centerTitle: true,
         backgroundColor: Colors.blue,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -112,6 +186,10 @@ class _AceBoPageState extends State<AceBoPage> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _clearMessages,
+          ),
         ],
       ),
       body: Column(
@@ -121,8 +199,30 @@ class _AceBoPageState extends State<AceBoPage> {
               children: [
                 ListView.builder(
                   controller: _scrollController,
-                  itemCount: _messages.length,
+                  itemCount: _messages.length + (_isLoading ? 1 : 0),
                   itemBuilder: (context, index) {
+                    if (index == _messages.length) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? Colors.black : Colors.grey[300],
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(15),
+                              topRight: Radius.circular(15),
+                              bottomRight: Radius.circular(15),
+                            ),
+                          ),
+                          child: Text(
+                            _loadingText,
+                            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black, fontSize: fontSizeProvider.fontSize),
+                          ),
+                        ),
+                      );
+                    }
+
                     final message = _messages[index];
 
                     return Align(
@@ -150,12 +250,12 @@ class _AceBoPageState extends State<AceBoPage> {
                         child: message['role'] == 'user'
                             ? Text(
                                 message['text']!,
-                                style: TextStyle(color: Colors.black),
+                                style: TextStyle(color: Colors.black, fontSize: fontSizeProvider.fontSize),
                               )
                             : MarkdownBody(
                                 data: message['text']!,
                                 styleSheet: MarkdownStyleSheet(
-                                  p: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                                  p: TextStyle(color: isDarkMode ? Colors.white : Colors.black, fontSize: fontSizeProvider.fontSize),
                                 ),
                               ),
                       ),
@@ -166,7 +266,7 @@ class _AceBoPageState extends State<AceBoPage> {
                   Center(
                     child: Text(
                       'What can I help with?',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.grey),
                     ),
                   ),
               ],
@@ -180,7 +280,7 @@ class _AceBoPageState extends State<AceBoPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: Icon(Icons.attach_file),
-                      label: Text('TestMe: Upload PDF'),
+                      label: Text('TestMe: Upload PDF', style: TextStyle(fontSize: fontSizeProvider.fontSize)),
                       onPressed: _uploadPdfAndGenerateQuiz,
                     ),
                   ),
@@ -200,10 +300,10 @@ class _AceBoPageState extends State<AceBoPage> {
                       ),
                       child: TextField(
                         controller: _controller,
-                        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black, fontSize: fontSizeProvider.fontSize),
                         decoration: InputDecoration(
                           hintText: 'Type your message...',
-                          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[700]),
+                          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[700], fontSize: fontSizeProvider.fontSize),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),

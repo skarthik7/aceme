@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:aceme/theme_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:aceme/font_size_provider.dart';
 
 class PlannerPage extends StatefulWidget {
   @override
@@ -151,6 +152,7 @@ class _PlannerPageState extends State<PlannerPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -182,7 +184,7 @@ class _PlannerPageState extends State<PlannerPage> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Center(child: Text(
                     "No tasks yet. Add some!",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                    style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.grey),
                     )
                     );
                 }
@@ -230,16 +232,17 @@ class _PlannerPageState extends State<PlannerPage> {
                           title: Text(
                             task['title'],
                             style: TextStyle(
+                              fontSize: fontSizeProvider.fontSize,
                               decoration: task['completed'] ? TextDecoration.lineThrough : TextDecoration.none,
                             ),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("📌 ${task['description']}"),
-                              Text("📅 Due: ${DateFormat('yyyy-MM-dd').format(task['dueDate'].toDate())}"),
-                              Text("📂 Category: ${task['category']}"),
-                              Text("⚡ Priority: ${task['priority']}"),
+                              Text("📌 ${task['description']}", style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+                              Text("📅 Due: ${DateFormat('yyyy-MM-dd').format(task['dueDate'].toDate())}", style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+                              Text("📂 Category: ${task['category']}", style: TextStyle(fontSize: fontSizeProvider.fontSize)),
+                              Text("⚡ Priority: ${task['priority']}", style: TextStyle(fontSize: fontSizeProvider.fontSize)),
                             ],
                           ),
                           leading: Checkbox(
